@@ -1,5 +1,5 @@
 {
-  "version": "v1.2.2",
+  "version": "v1.2.3",
   "scopes": {
     "site": "全站",
     "sample-size": "样本量计算器",
@@ -8,6 +8,15 @@
     "significance-test": "显著性检验"
   },
   "releases": [
+    {
+      "version": "v1.2.3",
+      "date": "2026-06-30",
+      "changes": {
+        "power-analysis": [
+          { "group": "新增", "items": ["AB 测试场景填写目标 MDE δ 后，结果区新增「达到目标 MDE 所需总样本量」「对照组样本量（A组）」「实验组样本量（B组）」三张卡片，并标注约需累积天数", "样本量按当前分流比例/分组流量分配，与 MDE 曲线口径一致（pA≈pB≈p₀ 近似）"] }
+        ]
+      }
+    },
     {
       "version": "v1.2.2",
       "date": "2026-06-09",

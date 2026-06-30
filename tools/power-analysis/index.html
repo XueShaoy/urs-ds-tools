@@ -26,10 +26,10 @@
         .scenario-btn.active.ab { background: linear-gradient(135deg, var(--accent-orange), var(--accent-red)); }
         .scenario-badge.monitoring { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
         .scenario-badge.ab-test { background: rgba(245,158,11,0.15); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px 22px; }
-        .stat-label { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-        .stat-value { font-size: 1.6rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan); }
+        .summary-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 24px; }
+        .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 16px; min-width: 0; }
+        .stat-label { font-size: 0.74rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan); white-space: nowrap; }
         .stat-value.warn { color: var(--accent-orange); }
         .stat-value.good { color: var(--accent-green); }
         .stat-unit { font-size: 0.85rem; color: var(--text-secondary); margin-left: 4px; font-family: inherit; font-weight: 400; }
@@ -56,6 +56,9 @@
         .mode-tabs { display: flex; background: var(--bg-secondary); border-radius: 8px; padding: 3px; border: 1px solid var(--border-color); }
         .mode-tab { padding: 6px 14px; border: none; background: transparent; color: var(--text-secondary); font-size: 0.8rem; font-family: inherit; cursor: pointer; border-radius: 5px; transition: all 0.2s; font-weight: 500; }
         .mode-tab.active { background: var(--bg-tertiary); color: var(--text-primary); }
+        @media (max-width: 900px) {
+            .summary-grid { grid-auto-flow: row; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); grid-auto-columns: auto; }
+        }
         @media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
     </style>
     <link rel="stylesheet" href="../../assets/changelog.css">
@@ -288,6 +291,26 @@ function calcMDE(p0, nA, nB, alpha, power, scenario) {
         ? Math.sqrt(variance(p0) / nA + variance(p0) / nB)
         : Math.sqrt(variance(p0) / nA);
     return z * se;
+}
+
+// Required sample sizes to reach target MDE δ at target power.
+// Returns { total, nA, nB } (consistent with calcMDE's pA≈pB≈p0 approximation).
+function calcRequiredN_ab(p0, delta, alpha, power, ctx) {
+    const z = normInv(1 - alpha / 2) + normInv(power);
+    const seTarget = delta / z;
+    const v = variance(p0);
+    let fA, fB;
+    if (ctx.abTrafficMode === 'direct') {
+        const tot = (ctx.dailyNa || 0) + (ctx.dailyNb || 0);
+        fA = (ctx.dailyNa || 0) / tot;
+        fB = (ctx.dailyNb || 0) / tot;
+    } else {
+        const { rA, rB } = getSplitRatio(ctx.splitRatio);
+        fA = rA / (rA + rB);
+        fB = rB / (rA + rB);
+    }
+    const total = v * (1 / fA + 1 / fB) / (seTarget * seTarget);
+    return { total, nA: total * fA, nB: total * fB };
 }
 
 // ===== Curve builders =====
@@ -525,8 +548,8 @@ function powerAnalysis() {
         dailyNb: '',
         p0: '',
         delta: '',
-        alpha: '0.20',
-        targetPower: '0.70',
+        alpha: '0.05',
+        targetPower: '0.80',
         maxDays: 28,
         errors: {},
         errorList: [],
@@ -627,12 +650,38 @@ function powerAnalysis() {
                 <div class="stat-value">${mdeAtMax.toFixed(2)}<span class="stat-unit">%</span></div>
                 <div class="stat-note">功效 ${targetPowerPct}%，α = ${alpha}</div>
             </div>`;
+
+            // AB scenario: required sample size to reach target MDE δ
+            if (this.scenario === 'ab-test' && delta) {
+                const req = calcRequiredN_ab(p0, delta, alpha, targetPower, ctx);
+                const totalN = Math.ceil(req.total);
+                const reqNA = Math.ceil(req.nA);
+                const reqNB = Math.ceil(req.nB);
+                const dailyTotal = isDirect ? (dailyNa + dailyNb) : dailyN;
+                const daysNeeded = dailyTotal > 0 ? Math.ceil(req.total / dailyTotal) : null;
+                const daysNote = daysNeeded !== null ? `约需 ${daysNeeded} 天累积` : '';
+                html += `<div class="stat-card">
+                    <div class="stat-label">达到目标 MDE 所需总样本量</div>
+                    <div class="stat-value good">${totalN.toLocaleString()}</div>
+                    <div class="stat-note">δ = ${deltaRaw.toFixed(2)}%，功效 ${targetPowerPct}%${daysNote ? '，' + daysNote : ''}</div>
+                </div>`;
+                html += `<div class="stat-card">
+                    <div class="stat-label">对照组样本量（A组）</div>
+                    <div class="stat-value">${reqNA.toLocaleString()}</div>
+                    <div class="stat-note">达到目标 MDE 时</div>
+                </div>`;
+                html += `<div class="stat-card">
+                    <div class="stat-label">实验组样本量（B组）</div>
+                    <div class="stat-value">${reqNB.toLocaleString()}</div>
+                    <div class="stat-note">达到目标 MDE 时</div>
+                </div>`;
+            }
             const { nA: nA1, nB: nB1 } = nForDay(1, ctx);
             const groupNote = this.scenario === 'ab-test'
                 ? `A组 ${Math.round(nA1).toLocaleString()} 人 / B组 ${Math.round(nB1).toLocaleString()} 人`
                 : `${Math.round(nA1).toLocaleString()} 人`;
             html += `<div class="stat-card">
-                <div class="stat-label">第 1 天 MDE（单日流量）</div>
+                <div class="stat-label">单日流量 MDE</div>
                 <div class="stat-value">${mdeAt1.toFixed(2)}<span class="stat-unit">%</span></div>
                 <div class="stat-note">${groupNote}</div>
             </div>`;
