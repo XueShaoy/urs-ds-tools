@@ -28,7 +28,7 @@
         .scenario-badge.ab-test { background: rgba(245,158,11,0.15); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
         .summary-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 24px; }
         .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 16px; min-width: 0; }
-        .stat-label { font-size: 0.74rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .stat-label { display: flex; align-items: center; gap: 4px; font-size: 0.74rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.04em; white-space: nowrap; }
         .stat-value { font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan); white-space: nowrap; }
         .stat-value.warn { color: var(--accent-orange); }
         .stat-value.good { color: var(--accent-green); }
@@ -631,22 +631,25 @@ function powerAnalysis() {
             const mdeDropDay  = delta ? findDropDay(mdeCurve, delta * 100) : null;
 
             // Summary stats
+            const statLabel = (text, tip) =>
+                `<div class="stat-label">${text}<sl-tooltip content="${tip}" style="--max-width: 260px;"><span class="tip-icon">ⓘ</span></sl-tooltip></div>`;
+
             let html = '';
             if (delta) {
                 const reachable = crossDay !== null;
                 html += `<div class="stat-card">
-                    <div class="stat-label">达到 ${targetPowerPct}% 功效所需天数</div>
+                    ${statLabel('达标天数', `在目标功效 ${targetPowerPct}%、α = ${alpha} 下，可检测到目标 MDE δ = ${deltaRaw.toFixed(2)}% 所需的实验累积天数。`)}
                     <div class="stat-value ${reachable ? 'good' : 'warn'}">${reachable ? crossDay : '&gt;' + maxDays}<span class="stat-unit">天</span></div>
                     <div class="stat-note">δ = ${deltaRaw.toFixed(2)}%，α = ${alpha}</div>
                 </div>`;
                 html += `<div class="stat-card">
-                    <div class="stat-label">第 ${maxDays} 天的统计功效</div>
+                    ${statLabel('最终功效', `实验进行到第 ${maxDays} 天（最多观测天数）时，针对 δ = ${deltaRaw.toFixed(2)}% 的统计功效。`)}
                     <div class="stat-value ${powerAtMax >= targetPower * 100 ? 'good' : 'warn'}">${powerAtMax.toFixed(1)}<span class="stat-unit">%</span></div>
                     <div class="stat-note">δ = ${deltaRaw.toFixed(2)}%，α = ${alpha}</div>
                 </div>`;
             }
             html += `<div class="stat-card">
-                <div class="stat-label">第 ${maxDays} 天可检测 MDE</div>
+                ${statLabel('最终 MDE', `实验进行到第 ${maxDays} 天（最多观测天数）时，在目标功效 ${targetPowerPct}% 下可检测的最小效应量。`)}
                 <div class="stat-value">${mdeAtMax.toFixed(2)}<span class="stat-unit">%</span></div>
                 <div class="stat-note">功效 ${targetPowerPct}%，α = ${alpha}</div>
             </div>`;
@@ -661,19 +664,19 @@ function powerAnalysis() {
                 const daysNeeded = dailyTotal > 0 ? Math.ceil(req.total / dailyTotal) : null;
                 const daysNote = daysNeeded !== null ? `约需 ${daysNeeded} 天累积` : '';
                 html += `<div class="stat-card">
-                    <div class="stat-label">达到目标 MDE 所需总样本量</div>
+                    ${statLabel('所需总样本量', `在目标功效 ${targetPowerPct}%、α = ${alpha} 下，检测到目标 MDE δ = ${deltaRaw.toFixed(2)}% 所需的总样本量（对照组 + 实验组）。`)}
                     <div class="stat-value good">${totalN.toLocaleString()}</div>
                     <div class="stat-note">δ = ${deltaRaw.toFixed(2)}%，功效 ${targetPowerPct}%${daysNote ? '，' + daysNote : ''}</div>
                 </div>`;
                 html += `<div class="stat-card">
-                    <div class="stat-label">对照组样本量（A组）</div>
+                    ${statLabel('对照组样本量', '达到目标 MDE 时，对照组（A组）所需的样本量，按当前分流比例分配。')}
                     <div class="stat-value">${reqNA.toLocaleString()}</div>
-                    <div class="stat-note">达到目标 MDE 时</div>
+                    <div class="stat-note">A组 · 达到目标 MDE 时</div>
                 </div>`;
                 html += `<div class="stat-card">
-                    <div class="stat-label">实验组样本量（B组）</div>
+                    ${statLabel('实验组样本量', '达到目标 MDE 时，实验组（B组）所需的样本量，按当前分流比例分配。')}
                     <div class="stat-value">${reqNB.toLocaleString()}</div>
-                    <div class="stat-note">达到目标 MDE 时</div>
+                    <div class="stat-note">B组 · 达到目标 MDE 时</div>
                 </div>`;
             }
             const { nA: nA1, nB: nB1 } = nForDay(1, ctx);
@@ -681,7 +684,7 @@ function powerAnalysis() {
                 ? `A组 ${Math.round(nA1).toLocaleString()} 人 / B组 ${Math.round(nB1).toLocaleString()} 人`
                 : `${Math.round(nA1).toLocaleString()} 人`;
             html += `<div class="stat-card">
-                <div class="stat-label">单日流量 MDE</div>
+                ${statLabel('单日 MDE', '仅使用单日流量时，在目标功效下可检测的最小效应量。')}
                 <div class="stat-value">${mdeAt1.toFixed(2)}<span class="stat-unit">%</span></div>
                 <div class="stat-note">${groupNote}</div>
             </div>`;
