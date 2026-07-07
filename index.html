@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URS DS Tools</title>
+    <meta name="description" content="URS 数据科学团队统计工具：样本量计算、显著性检验、功效分析、序贯检验。">
+    <meta property="og:title" content="URS DS Tools">
+    <meta property="og:description" content="实验与观测统计工具集">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem('urs-ds-theme');
+          if (m !== 'light' && m !== 'dark') {
+            m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', m);
+        } catch (e) {}
+      })();
+    </script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-VQV08H7W6V"></script>
     <script>
@@ -12,166 +30,133 @@
       gtag('js', new Date());
       gtag('config', 'G-VQV08H7W6V');
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/styles.css">
-    <style>
-        .container { padding: 80px 24px 64px; }
-        header { margin-bottom: 56px; }
-        h1 { font-size: 3rem; margin-bottom: 14px; letter-spacing: -0.01em; }
-        .subtitle { font-size: 1.05rem; }
-        .section-title {
-            display: flex; align-items: center; gap: 12px;
-            font-size: 1rem; font-weight: 600; color: var(--text-secondary);
-            margin-bottom: 22px; text-transform: uppercase; letter-spacing: 0.08em;
-        }
-        .section-title::before { content: ''; width: 4px; height: 18px; background: linear-gradient(180deg, var(--accent-blue), var(--accent-purple)); border-radius: 2px; }
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-        .tool-card {
-            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px;
-            padding: 28px; position: relative; overflow: hidden; text-decoration: none; color: inherit;
-            display: flex; flex-direction: column; min-height: 220px;
-            transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-        }
-        .tool-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
-        }
-        .tool-card.active:hover { transform: translateY(-6px); border-color: var(--accent-blue); box-shadow: var(--shadow), var(--glow-blue); }
-        .tool-card.active:hover .card-arrow { transform: translateX(4px); color: var(--accent-cyan); }
-        .card-icon { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 20px; }
-        .card-icon.blue { background: linear-gradient(135deg, rgba(59,130,246,0.22), rgba(6,182,212,0.22)); }
-        .card-icon.purple { background: linear-gradient(135deg, rgba(139,92,246,0.22), rgba(236,72,153,0.18)); }
-        .card-icon.green { background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(6,182,212,0.18)); }
-        .card-icon.muted { background: var(--bg-tertiary); }
-        .card-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; }
-        .card-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; flex: 1; }
-        .card-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
-        .card-tag { font-size: 0.72rem; padding: 3px 10px; border-radius: 12px; background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border-color); }
-        .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-color); }
-        .card-action { font-size: 0.85rem; font-weight: 500; color: var(--accent-blue); }
-        .card-arrow { font-size: 1.1rem; color: var(--accent-blue); transition: transform 0.25s, color 0.25s; }
-        .tool-card.soon { opacity: 0.55; cursor: default; }
-        .tool-card.soon .card-icon { color: var(--text-muted); }
-        .tool-card.soon .card-action { color: var(--text-muted); }
-        .soon-badge { position: absolute; top: 18px; right: 18px; font-size: 0.68rem; font-weight: 500; padding: 3px 10px; border-radius: 12px; background: var(--bg-tertiary); color: var(--text-muted); border: 1px solid var(--border-color); }
-        @media (max-width: 768px) {
-            .container { padding: 56px 16px 56px; }
-            h1 { font-size: 2.25rem; }
-            .tools-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+    <link rel="stylesheet" href="assets/apple-theme.css">
+    <link rel="stylesheet" href="assets/home.css">
     <link rel="stylesheet" href="assets/changelog.css">
 </head>
-<body>
-    <button class="watermark" id="changelog-watermark" onclick="openChangelog()" title="点击查看更新日志">URS数据科学团队 © 2026</button>
+<body class="urs-app home-page">
+    <a class="skip-link" href="#main">跳到主内容</a>
+
+    <button class="watermark" id="changelog-watermark" onclick="openChangelog()" title="点击查看更新日志" type="button">URS数据科学团队 © 2026</button>
 
     <div class="changelog-overlay" id="changelog-overlay" onclick="closeChangelogOnOverlay(event)">
         <div class="changelog-modal" role="dialog" aria-labelledby="changelog-title">
             <div class="changelog-header">
                 <span class="changelog-title" id="changelog-title">📋 更新日志</span>
-                <button class="changelog-close" onclick="closeChangelog()" aria-label="关闭">✕</button>
+                <button class="changelog-close" onclick="closeChangelog()" aria-label="关闭" type="button">✕</button>
             </div>
             <div class="changelog-body" id="changelog-body"></div>
         </div>
     </div>
 
-    <div class="container">
-        <header>
-            <div class="brand-badge">◆ URS DATA SCIENCE</div>
-            <h1>URS DS Tools</h1>
-            <p class="subtitle">URS 数据科学团队 · 工具集</p>
-        </header>
+    <div class="home-shell">
+        <main id="main">
+            <header class="page-intro">
+                <div class="page-intro-row">
+                    <div class="page-intro-text">
+                        <h1>URS DS Tools</h1>
+                        <p>URS 数据科学团队 · 实验与观测统计工具</p>
+                    </div>
+                    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="切换到深色模式" title="深色模式">
+                        <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998z"/>
+                        </svg>
+                        <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591 1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773-1.591-1.591M15.75 12a3.75 3.75 0 0 1-7.5 0 3.75 3.75 0 0 1 7.5 0z"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
 
-        <div class="section-title">工具</div>
-        <div class="tools-grid">
-            <!-- Sample Size Calculator -->
-            <a class="tool-card active" href="tools/sample-size/index.html">
-                <div class="card-icon blue">📊</div>
-                <div class="card-title">样本量计算器</div>
-                <div class="card-desc">基于统计检验的样本量估算工具，支持精度与样本量双向推算。</div>
-                <div class="card-tags">
-                    <span class="card-tag">长期观测</span>
-                    <span class="card-tag">AB 测试</span>
-                    <span class="card-tag">比例 / 均值</span>
+            <section class="home-section" aria-labelledby="tools-heading">
+                <h2 class="section-label" id="tools-heading">工具</h2>
+                <div class="tool-group">
+                <ul class="tool-list">
+                    <li>
+                        <a class="tool-item" href="tools/sample-size/index.html">
+                            <span class="tool-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="17" y="4" width="4" height="17" rx="1"/>
+                                </svg>
+                            </span>
+                            <span class="tool-item-body">
+                                <span class="tool-item-title">样本量计算器</span>
+                                <span class="tool-item-desc">长期观测 / AB 测试，精度与样本量双向推算，支持 LDBOM 分页面加权</span>
+                            </span>
+                            <span class="tool-item-arrow" aria-hidden="true">→</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="tool-item" href="tools/significance-test/index.html">
+                            <span class="tool-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                                    <path d="M6 18L10 10l4 5 4-9 4 12"/><line x1="4" y1="20" x2="20" y2="20"/>
+                                </svg>
+                            </span>
+                            <span class="tool-item-body">
+                                <span class="tool-item-title">显著性检验</span>
+                                <span class="tool-item-desc">单 / 双样本 z 比例检验，森林图，CSV 导入，多重比较校正</span>
+                            </span>
+                            <span class="tool-item-arrow" aria-hidden="true">→</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="tool-item" href="tools/power-analysis/index.html">
+                            <span class="tool-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 20V10M10 20V4M16 20v-8M22 20V7"/>
+                                </svg>
+                            </span>
+                            <span class="tool-item-body">
+                                <span class="tool-item-title">功效分析</span>
+                                <span class="tool-item-desc">功效与 MDE 随实验天数变化的曲线</span>
+                            </span>
+                            <span class="tool-item-arrow" aria-hidden="true">→</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="tool-item" href="tools/sequential-test/index.html">
+                            <span class="tool-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                                    <path d="M4 16c3-8 5-8 8 0s5 8 8 0"/><line x1="4" y1="20" x2="20" y2="20"/>
+                                </svg>
+                            </span>
+                            <span class="tool-item-body">
+                                <span class="tool-item-title">序贯检验</span>
+                                <span class="tool-item-desc">O'Brien-Fleming / Pocock 早停边界与 α 消费函数</span>
+                            </span>
+                            <span class="tool-item-arrow" aria-hidden="true">→</span>
+                        </a>
+                    </li>
+                </ul>
                 </div>
-                <div class="card-footer">
-                    <span class="card-action">进入工具</span>
-                    <span class="card-arrow">→</span>
-                </div>
-            </a>
+            </section>
 
-            <!-- Significance Test -->
-            <a class="tool-card active" href="tools/significance-test/index.html">
-                <div class="card-icon purple">🧮</div>
-                <div class="card-title">显著性检验</div>
-                <div class="card-desc">单/双样本 z 比例检验，森林图可视化，支持本地 CSV 数据导入。</div>
-                <div class="card-tags">
-                    <span class="card-tag">单样本</span>
-                    <span class="card-tag">双样本</span>
-                    <span class="card-tag">森林图</span>
-                    <span class="card-tag">CSV</span>
+            <section class="home-section" aria-labelledby="docs-heading">
+                <h2 class="section-label" id="docs-heading">文档</h2>
+                <div class="tool-group">
+                <ul class="tool-list">
+                    <li>
+                        <a class="tool-item" href="tools/sample-size/mde-business-guide.html">
+                            <span class="tool-item-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                                </svg>
+                            </span>
+                            <span class="tool-item-body">
+                                <span class="tool-item-title">MDE 图文讲解</span>
+                                <span class="tool-item-desc">从直觉到公式，解释最小可检测效应与样本量计算</span>
+                            </span>
+                            <span class="tool-item-arrow" aria-hidden="true">→</span>
+                        </a>
+                    </li>
+                </ul>
                 </div>
-                <div class="card-footer">
-                    <span class="card-action">进入工具</span>
-                    <span class="card-arrow">→</span>
-                </div>
-            </a>
-
-            <!-- Power Analysis -->
-            <a class="tool-card active" href="tools/power-analysis/index.html">
-                <div class="card-icon green">📈</div>
-                <div class="card-title">功效分析</div>
-                <div class="card-desc">输入实验流量与效应量，查看统计功效与可检测 MDE 如何随天数增长。</div>
-                <div class="card-tags">
-                    <span class="card-tag">长期观测</span>
-                    <span class="card-tag">AB 测试</span>
-                    <span class="card-tag">功效曲线</span>
-                    <span class="card-tag">MDE 曲线</span>
-                </div>
-                <div class="card-footer">
-                    <span class="card-action">进入工具</span>
-                    <span class="card-arrow">→</span>
-                </div>
-            </a>
-
-            <!-- Sequential Test -->
-            <a class="tool-card active" href="tools/sequential-test/index.html">
-                <div class="card-icon blue">🔬</div>
-                <div class="card-title">序贯检验</div>
-                <div class="card-desc">O'Brien-Fleming / Pocock 早停边界，解决多次窥探导致的 I 类错误膨胀问题。</div>
-                <div class="card-tags">
-                    <span class="card-tag">早停</span>
-                    <span class="card-tag">α 消费函数</span>
-                    <span class="card-tag">AB 测试</span>
-                    <span class="card-tag">边界图</span>
-                </div>
-                <div class="card-footer">
-                    <span class="card-action">进入工具</span>
-                    <span class="card-arrow">→</span>
-                </div>
-            </a>
-        </div>
-
-        <div class="section-title" style="margin-top: 44px;">方法论文章</div>
-        <div class="tools-grid">
-            <a class="tool-card active" href="tools/sample-size/mde-business-guide.html">
-                <div class="card-icon purple">📚</div>
-                <div class="card-title">MDE 图文讲解</div>
-                <div class="card-desc">从直觉到公式，结合可视化一步一步解释 MDE 的含义、面积解读方法和计算过程，适合非统计背景同学阅读。</div>
-                <div class="card-tags">
-                    <span class="card-tag">MDE</span>
-                    <span class="card-tag">可视化</span>
-                    <span class="card-tag">业务解释</span>
-                    <span class="card-tag">图文文章</span>
-                </div>
-                <div class="card-footer">
-                    <span class="card-action">阅读文章</span>
-                    <span class="card-arrow">→</span>
-                </div>
-            </a>
-        </div>
+            </section>
+        </main>
     </div>
 
+<script src="assets/theme.js"></script>
 <script src="assets/changelog.js" data-page="home" data-base=""></script>
 </body>
 </html>

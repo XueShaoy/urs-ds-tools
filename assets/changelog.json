@@ -1,5 +1,5 @@
 {
-  "version": "v1.2.3",
+  "version": "v1.3.0",
   "scopes": {
     "site": "全站",
     "sample-size": "样本量计算器",
@@ -8,6 +8,15 @@
     "significance-test": "显著性检验"
   },
   "releases": [
+    {
+      "version": "v1.3.0",
+      "date": "2026-07-07",
+      "changes": {
+        "site": [
+          { "group": "改进", "items": ["全站视觉重构", "支持浅色/深色模式切换"] }
+        ]
+      }
+    },
     {
       "version": "v1.2.3",
       "date": "2026-06-30",

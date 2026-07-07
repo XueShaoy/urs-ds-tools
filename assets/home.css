@@ -1,0 +1,127 @@
+/* ============================================================
+   URS DS Tools — Homepage-specific styles
+   (shared tokens & shell in apple-theme.css)
+   ============================================================ */
+
+body.home-page .home-shell {
+    max-width: 692px;
+    margin: 0 auto;
+    padding: 44px 20px 72px;
+}
+
+.page-intro { margin-bottom: 32px; }
+
+.page-intro-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+.page-intro-text { flex: 1; min-width: 0; }
+
+.page-intro h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin-bottom: 6px;
+    background: none;
+    -webkit-text-fill-color: var(--apple-label);
+    text-align: left;
+    color: var(--apple-label);
+}
+.page-intro p {
+    font-size: 1rem;
+    color: var(--apple-secondary);
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.home-section { margin-bottom: 28px; }
+.section-label {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--apple-secondary);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+    padding-left: 16px;
+    text-transform: none;
+}
+
+.tool-group {
+    background: var(--apple-grouped);
+    border-radius: 12px;
+    box-shadow: var(--apple-shadow);
+    overflow: hidden;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tool-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.tool-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    min-height: 58px;
+    border: none;
+    border-radius: 0;
+    border-bottom: 0.5px solid var(--apple-separator);
+    background: transparent;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease;
+}
+.tool-list li:last-child .tool-item { border-bottom: none; }
+.tool-item:hover { background: var(--apple-fill-hover); }
+.tool-item:active { background: var(--apple-fill); }
+.tool-item:focus-visible {
+    outline: 2px solid var(--apple-blue);
+    outline-offset: -2px;
+}
+
+.tool-item-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    background: var(--apple-fill);
+    color: var(--apple-label);
+}
+.tool-item-icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
+
+.tool-item-body { flex: 1; min-width: 0; }
+.tool-item-title {
+    display: block;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 1px;
+    color: var(--apple-label);
+}
+.tool-item-desc {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--apple-secondary);
+    line-height: 1.4;
+}
+
+.tool-item-arrow {
+    flex-shrink: 0;
+    font-size: 1.125rem;
+    font-weight: 300;
+    color: var(--apple-tertiary);
+    line-height: 1;
+}
+
+@media (max-width: 600px) {
+    body.home-page .home-shell { padding: 28px 16px 64px; }
+    .page-intro h1 { font-size: 1.625rem; }
+    .page-intro-row { flex-direction: column; align-items: stretch; }
+    .theme-toggle { align-self: flex-end; }
+}

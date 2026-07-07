@@ -145,8 +145,8 @@ function updateMetricInputs() {
     let rows = '';
     for (let i = 1; i <= k; i++) {
         const prev = existing[i - 1] || { p: '', delta: '' };
-        rows += `<div style="display:flex;align-items:center;gap:16px;background:var(--bg-secondary);border-radius:10px;padding:14px 16px;border:1px solid var(--border-color);">
-            <span style="font-size:0.8rem;color:var(--text-muted);min-width:36px;font-family:'JetBrains Mono',monospace;">指标 ${i}</span>
+        rows += `<div class="metric-row" style="display:flex;align-items:center;gap:16px;background:var(--apple-fill);border-radius:10px;padding:14px 16px;">
+            <span style="font-size:0.8rem;color:var(--apple-secondary);min-width:36px;font-family:ui-monospace,'SF Mono','JetBrains Mono',monospace;">指标 ${i}</span>
             <div class="form-group" style="flex:1;margin:0;">
                 <label style="font-size:0.78rem;">观测目标 p</label>
                 <div class="input-suffix" data-suffix="%"><input type="number" id="m1-metric-${i}-p" value="${prev.p}" placeholder="例如: 70" step="0.1" min="0" max="100"></div>
@@ -161,8 +161,8 @@ function updateMetricInputs() {
     const alpha = parseFloat(document.getElementById('m1-alpha').value) || 0.2;
     const alphaAdj = (alpha / k).toFixed(4);
     multi.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px;">${rows}</div>
-        <div id="m1-bonferroni-info" style="margin-top:12px;font-size:0.8rem;color:var(--text-muted);background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:8px;padding:10px 14px;">
-            Bonferroni 校正：α_adj = ${alpha} / ${k} = <strong style="color:var(--accent-cyan);">${alphaAdj}</strong>，整体误报率 ≤ ${alpha}
+        <div id="m1-bonferroni-info" class="bonferroni-info">
+            Bonferroni 校正：α_adj = ${alpha} / ${k} = <strong>${alphaAdj}</strong>，整体误报率 ≤ ${alpha}
         </div>`;
 }
 
@@ -171,17 +171,17 @@ function updateBonferroniInfo() {
     if (!info) return;
     const k = Math.max(1, parseInt(document.getElementById('m1-k').value) || 1);
     const alpha = parseFloat(document.getElementById('m1-alpha').value) || 0.2;
-    info.innerHTML = `Bonferroni 校正：α_adj = ${alpha} / ${k} = <strong style="color:var(--accent-cyan);">${(alpha / k).toFixed(4)}</strong>，整体误报率 ≤ ${alpha}`;
+    info.innerHTML = `Bonferroni 校正：α_adj = ${alpha} / ${k} = <strong>${(alpha / k).toFixed(4)}</strong>，整体误报率 ≤ ${alpha}`;
 }
 
 // ===== UI =====
 function switchScenario(s) {
     scenario = s;
     document.querySelectorAll('.scenario-btn').forEach(btn => {
-        btn.classList.remove('active', 'ab-test');
+        btn.classList.remove('active');
         const selected = btn.dataset.scenario === s;
         btn.setAttribute('aria-selected', selected ? 'true' : 'false');
-        if (selected) { btn.classList.add('active'); if (s === 'ab-test') btn.classList.add('ab-test'); }
+        if (selected) btn.classList.add('active');
     });
     document.getElementById('page-title').textContent = s === 'ab-test' ? 'AB 测试 ' : '长期观测 ';
     
@@ -291,7 +291,7 @@ function updateInfoBoxes() {
 
 function initPageConfigs() {
     for (let mode = 1; mode <= 2; mode++) {
-        const gridHtml = PAGES.map(p => `<div><input type="checkbox" id="m${mode}-pg-${p}" class="page-checkbox" onchange="togglePage(${mode},'${p}')"><label for="m${mode}-pg-${p}" class="page-label">${p}<span class="page-full-name">${PAGE_NAMES[p]}</span></label></div>`).join('');
+        const gridHtml = PAGES.map(p => `<div><input type="checkbox" id="m${mode}-pg-${p}" class="page-checkbox" onchange="togglePage(${mode},'${p}')"><label for="m${mode}-pg-${p}" class="page-label page-${p}">${p}<span class="page-full-name">${PAGE_NAMES[p]}</span></label></div>`).join('');
         document.getElementById(`m${mode}-page-grid`).innerHTML = gridHtml;
         
         let configHtml = '';
@@ -936,14 +936,14 @@ function renderMode1PageTable_Monitoring(alpha, power, delta) {
     const overallSE = Math.sqrt(varSum);
     const overallMDE = z * overallSE;
     const wOk = Math.abs(sumW - 1) <= 0.01;
-    const wNote = wOk ? '' : ` <span style="color:var(--accent-orange);">(权重和≠1，整体口径可能失真)</span>`;
+    const wNote = wOk ? '' : '权重和≠1，整体口径可能失真。';
     const estTotalDisplay = anyEst ? sumEst.toLocaleString() : '--';
     const overallStatus = anyEst ? (allSufficient ? '✓ 充足' : '⚠ 不足') : '--';
     const overallStatusClass = anyEst ? (allSufficient ? 'success-cell' : 'warning-cell') : '';
 
-    tbody += `<tr style="border-top:2px solid var(--accent-blue);font-weight:600;background:rgba(59,130,246,0.06);">
+    tbody += `<tr class="total-row">
         <td>合计</td>
-        <td>${sumW.toFixed(3)}${wNote}</td>
+        <td>${sumW.toFixed(3)}</td>
         <td>—</td>
         <td class="highlight-cell">${sumN.toLocaleString()}</td>
         <td>±${(overallSE*100).toFixed(4)}%</td>
@@ -952,7 +952,7 @@ function renderMode1PageTable_Monitoring(alpha, power, delta) {
         <td class="${overallStatusClass}">${overallStatus}</td>
     </tr>`;
 
-    tbody += `<tr><td colspan="8" style="font-size:0.78rem;color:var(--text-secondary);background:transparent;line-height:1.6;padding-top:12px;">
+    tbody += `<tr class="table-footnote"><td colspan="8">${wNote ? `<span class="table-warn">${wNote}</span><br>` : ''}
         分配方法：以整体目标 δ=${(delta*100).toFixed(2)}% 按权重比例分配方差预算（份额 wᵢ/Σw），回算加权整体 MDE ≈ δ。<br>
         各页所需样本量 nᵢ = wᵢ · (Σw) · pᵢ(1-pᵢ) · Z² / δ²；页面MDE = Z·√(pᵢ(1-pᵢ)/nᵢ)；整体MDE = Z·√(Σ wᵢ²·pᵢ(1-pᵢ)/nᵢ)。
     </td></tr>`;
@@ -1195,7 +1195,7 @@ function renderMode2PageTable_Monitoring(pages, alpha, power) {
         const overallSE = calcWeightedSE_single(pages);
         const overallMDE = z * overallSE;
         const kEss = kishESS(pages);
-        tbody += `<tr style="border-top:2px solid var(--accent-blue);font-weight:600;background:rgba(59,130,246,0.06);">
+        tbody += `<tr class="total-row">
             <td>汇总</td>
             <td>${sumW.toFixed(3)}</td>
             <td>${(wAvgP*100).toFixed(1)}%</td>

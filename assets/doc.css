@@ -1,0 +1,238 @@
+/* ============================================================
+   URS DS Tools — Documentation pages
+   ============================================================ */
+
+body.urs-app.doc-page {
+    line-height: 1.75;
+}
+
+.doc-layout {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 72px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.doc-toc-sidebar {
+    position: sticky;
+    top: 20px;
+    padding-top: 8px;
+}
+
+.doc-toc-sidebar h2 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--apple-secondary);
+    margin: 0 0 10px;
+    padding-left: 4px;
+}
+
+.doc-toc-nav {
+    background: var(--apple-grouped);
+    border-radius: 12px;
+    box-shadow: var(--apple-shadow);
+    padding: 12px 0;
+    list-style: none;
+    margin: 0;
+}
+
+.doc-toc-nav a {
+    display: block;
+    padding: 7px 16px;
+    font-size: 0.8125rem;
+    color: var(--apple-secondary);
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+}
+
+.doc-toc-nav a:hover {
+    background: var(--apple-fill-hover);
+    color: var(--apple-label);
+}
+
+.doc-toc-nav a.active {
+    color: var(--apple-blue);
+    font-weight: 500;
+}
+
+.doc-main {
+    min-width: 0;
+    max-width: 800px;
+}
+
+.doc-hero {
+    background: var(--apple-grouped);
+    border-radius: 12px;
+    box-shadow: var(--apple-shadow);
+    padding: 24px 22px;
+    margin-bottom: 20px;
+}
+
+.doc-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--apple-blue);
+    background: var(--apple-tag-bg);
+    border-radius: 999px;
+    padding: 4px 10px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.doc-hero h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin: 0 0 6px;
+    color: var(--apple-label);
+    background: none;
+    -webkit-text-fill-color: var(--apple-label);
+    text-align: left;
+}
+
+.doc-subtitle {
+    margin: 0;
+    color: var(--apple-secondary);
+    font-size: 0.9375rem;
+}
+
+.doc-card {
+    background: var(--apple-grouped);
+    border-radius: 12px;
+    box-shadow: var(--apple-shadow);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+}
+
+.doc-card h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--apple-label);
+    letter-spacing: -0.01em;
+}
+
+.doc-card h3 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin: 16px 0 8px;
+    color: var(--apple-label);
+}
+
+.doc-card p { margin: 10px 0; color: var(--apple-label); font-size: 0.9375rem; }
+.doc-card ul, .doc-card ol { margin: 8px 0; padding-left: 20px; color: var(--apple-label); font-size: 0.9375rem; }
+.doc-card li { margin: 4px 0; }
+
+.doc-quote {
+    border-left: 3px solid var(--apple-blue);
+    background: var(--apple-fill);
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 0.9375rem;
+    color: var(--apple-label);
+}
+
+.doc-tip {
+    border-left: 3px solid var(--apple-success);
+    background: rgba(52, 199, 89, 0.08);
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 0.875rem;
+    color: var(--apple-label);
+}
+html[data-theme="dark"] .doc-tip {
+    background: rgba(48, 209, 88, 0.1);
+}
+
+.doc-figure {
+    margin: 14px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--apple-fill);
+}
+
+.doc-figure img {
+    width: 100%;
+    display: block;
+}
+
+.doc-figure-caption {
+    margin: 0;
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+    color: var(--apple-secondary);
+    border-top: 0.5px solid var(--apple-separator);
+}
+
+.doc-formula {
+    background: var(--apple-fill);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+.doc-formula .mjx-container {
+    color: var(--apple-label) !important;
+}
+
+.doc-card table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.875rem;
+}
+
+.doc-card th,
+.doc-card td {
+    border: 0.5px solid var(--apple-separator);
+    padding: 8px 10px;
+    vertical-align: top;
+    text-align: left;
+}
+
+.doc-card th {
+    background: var(--apple-fill);
+    color: var(--apple-label);
+    font-weight: 600;
+}
+
+.doc-footer-link {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+.doc-footer-link a {
+    color: var(--apple-blue);
+    text-decoration: none;
+}
+
+.doc-footer-link a:hover { opacity: 0.8; }
+
+@media (max-width: 900px) {
+    .doc-layout {
+        grid-template-columns: 1fr;
+        padding: 0 16px 64px;
+    }
+    .doc-toc-sidebar {
+        position: static;
+        order: -1;
+    }
+    .doc-toc-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 10px;
+    }
+    .doc-toc-nav a {
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: var(--apple-fill);
+    }
+}
