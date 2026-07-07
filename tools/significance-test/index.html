@@ -1,9 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="sl-theme-dark">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>显著性检验 · z 比例检验</title>
+    <title>显著性检验 · URS DS Tools</title>
+    <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem('urs-ds-theme');
+          if (m !== 'light' && m !== 'dark') {
+            m = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', m);
+        } catch (e) {}
+      })();
+    </script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-VQV08H7W6V"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -11,766 +25,164 @@
       gtag('js', new Date());
       gtag('config', 'G-VQV08H7W6V');
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../assets/styles.css">
-    <!-- Shoelace -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
-    <link rel="stylesheet" href="../../assets/shoelace-theme.css">
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
-    <style>
-        [x-cloak] { display: none !important; }
-        .scenario-btn.active { background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); color: white; }
-        .scenario-badge { background: rgba(139,92,246,0.15); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
-        .data-toolbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
-        .data-toolbar .spacer { flex: 1; }
-        .table-scroll { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 14px; }
-        table.data-table { width: 100%; border-collapse: collapse; min-width: 560px; }
-        table.data-table th { background: var(--bg-secondary); font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; padding: 12px 12px; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        table.data-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-color); }
-        table.data-table tr:last-child td { border-bottom: none; }
-        table.data-table input { padding: 9px 12px; border-radius: 8px; font-size: 0.88rem; }
-        table.data-table input.metric-input { font-family: 'Noto Sans SC', sans-serif; }
-        .row-del { background: rgba(239,68,68,0.12); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 1rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .row-del:hover { background: rgba(239,68,68,0.25); }
-        .dropzone { margin-top: 18px; }
-        .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
-        .summary-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; text-align: center; }
-        .summary-card .s-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; }
-        .summary-card .s-value { font-size: 1.8rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-        .summary-card.sig { border-color: var(--accent-green); } .summary-card.sig .s-value { color: var(--accent-green); }
-        .summary-card.nsig { border-color: var(--accent-orange); } .summary-card.nsig .s-value { color: var(--accent-orange); }
-        .results-table { min-width: 720px; }
-        .results-table th { font-size: 0.72rem; letter-spacing: 0.03em; }
-        .results-table td.metric-cell { font-family: 'Noto Sans SC', sans-serif; font-weight: 500; }
-        .tag { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; font-family: 'Noto Sans SC', sans-serif; }
-        .tag.sig-up { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
-        .tag.sig-down { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
-        .tag.ns { background: rgba(107,114,128,0.15); color: var(--text-muted); border: 1px solid rgba(107,114,128,0.3); }
-        .forest-wrap { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 12px; overflow-x: auto; }
-        .forest-wrap svg { display: block; width: 100%; height: auto; min-width: 640px; }
-        .forest-legend { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; margin-top: 14px; font-size: 0.78rem; color: var(--text-secondary); }
-        .forest-legend .lg { display: inline-flex; align-items: center; gap: 7px; }
-        .forest-legend .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-        @media (max-width: 768px) { .summary-row { grid-template-columns: repeat(2, 1fr); } }
-    </style>
+    <link rel="stylesheet" href="../../assets/apple-theme.css">
+    <link rel="stylesheet" href="significance-test.css">
     <link rel="stylesheet" href="../../assets/changelog.css">
 </head>
-<body x-data="significanceTest()" x-cloak>
-    <button class="watermark" id="changelog-watermark" onclick="openChangelog()" title="点击查看更新日志">URS数据科学团队 © 2026</button>
+<body class="urs-app significance-test">
+    <a class="skip-link" href="#main">跳到主内容</a>
+    <button class="watermark" id="changelog-watermark" onclick="openChangelog()" title="点击查看更新日志" type="button">URS数据科学团队 © 2026</button>
 
     <div class="changelog-overlay" id="changelog-overlay" onclick="closeChangelogOnOverlay(event)">
         <div class="changelog-modal" role="dialog" aria-labelledby="changelog-title">
             <div class="changelog-header">
-                <span class="changelog-title" id="changelog-title">📋 更新日志</span>
-                <button class="changelog-close" onclick="closeChangelog()" aria-label="关闭">✕</button>
+                <span class="changelog-title" id="changelog-title">更新日志</span>
+                <button class="changelog-close" onclick="closeChangelog()" aria-label="关闭" type="button">✕</button>
             </div>
             <div class="changelog-body" id="changelog-body"></div>
         </div>
     </div>
 
-    <a class="home-link" href="../../index.html">
-        <span aria-hidden="true">←</span>
-        <span class="home-link-text">返回首页</span>
-    </a>
-
-    <div class="scenario-switch" role="tablist" aria-label="检验类型">
-        <button type="button" class="scenario-btn" role="tab" :class="{ active: testType === 'single' }" :aria-selected="testType === 'single'" @click="switchTest('single')">
-            <span class="scenario-btn-short">单样</span>
-            <span class="scenario-btn-full">📍 单样本检验</span>
-        </button>
-        <button type="button" class="scenario-btn" role="tab" :class="{ active: testType === 'two' }" :aria-selected="testType === 'two'" @click="switchTest('two')">
-            <span class="scenario-btn-short">双样</span>
-            <span class="scenario-btn-full">⚖️ 双样本检验</span>
-        </button>
-    </div>
-
-    <div class="container">
-        <header>
-            <h1>显著性检验</h1>
-            <p class="subtitle">z 比例检验 · 支持森林图可视化与本地 CSV 数据</p>
-            <div class="scenario-badge" x-text="testType === 'single' ? '📍 单样本 z 比例检验' : '⚖️ 双样本 z 比例检验'"></div>
+    <div class="app-shell">
+        <header class="app-topbar">
+            <a class="app-back" href="../../index.html">← 首页</a>
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="切换到深色模式" title="深色模式">
+                <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998z"/>
+                </svg>
+                <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591 1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773-1.591-1.591M15.75 12a3.75 3.75 0 0 1-7.5 0 3.75 3.75 0 0 1 7.5 0z"/>
+                </svg>
+            </button>
         </header>
 
-        <!-- 参数设置 -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-icon blue">⚙️</div>
-                <div><div class="card-title">检验参数</div><div class="card-desc">设定显著性水平与检验方向</div></div>
-            </div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>显著性水平 α <sl-tooltip content="假阳性率。α=0.05 表示 5% 概率误报。置信区间置信度为 1-α。" style="--max-width: 260px;"><span class="tip-icon">ⓘ</span></sl-tooltip></label>
-                    <input type="number" x-model="alpha" step="0.01" min="0.001" max="0.5" :class="{ 'input-error': errors.alpha }" @input="errors.alpha = ''">
-                </div>
-                <div class="form-group">
-                    <label>检验方向 <sl-tooltip content="双侧：检验是否存在差异（≠）。单侧：检验是否更大（>）或更小（<）。" style="--max-width: 260px;"><span class="tip-icon">ⓘ</span></sl-tooltip></label>
-                    <select x-model="tail">
-                        <option value="two">双侧检验 (≠)</option>
-                        <option value="greater">右侧检验 (&gt;)</option>
-                        <option value="less">左侧检验 (&lt;)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>多重比较校正 <sl-tooltip content="同时检验多个指标时整体误报率会膨胀。校正后基于校正 p 值判定显著性。Bonferroni 最保守；Holm 检验力更高；BH 控制错误发现率（FDR）。" style="--max-width: 260px;"><span class="tip-icon">ⓘ</span></sl-tooltip></label>
-                    <select x-model="correction">
-                        <option value="none">不校正</option>
-                        <option value="bonferroni">Bonferroni</option>
-                        <option value="holm">Holm-Bonferroni</option>
-                        <option value="bh">Benjamini-Hochberg (FDR)</option>
-                    </select>
-                </div>
-                <div class="form-group" x-show="testType === 'single'">
-                    <label>默认基准比例 p₀ <sl-tooltip content="单样本检验中，每个指标与该基准比例比较。表格中可对每行单独覆盖。" style="--max-width: 260px;"><span class="tip-icon">ⓘ</span></sl-tooltip></label>
-                    <input type="number" x-model="defaultP0" step="0.1" min="0" max="100" placeholder="例如: 50">
+        <main id="main">
+            <header class="tool-header">
+                <h1>显著性检验</h1>
+                <p class="tool-subtitle">z 比例检验 · 森林图可视化 · 本地 CSV 导入导出</p>
+            </header>
+
+            <div class="seg-row">
+                <div class="seg-control scenario-switch" role="tablist" aria-label="检验类型">
+                    <button type="button" class="scenario-btn active" data-test="single" role="tab" aria-selected="true" onclick="switchTest('single')">
+                        <span class="seg-btn-short">单样</span><span class="seg-btn-full">单样本检验</span>
+                    </button>
+                    <button type="button" class="scenario-btn" data-test="two" role="tab" aria-selected="false" onclick="switchTest('two')">
+                        <span class="seg-btn-short">双样</span><span class="seg-btn-full">双样本检验</span>
+                    </button>
                 </div>
             </div>
-            <div class="info-box" x-html="paramInfo"></div>
-        </div>
 
-        <!-- 数据输入 -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-icon green">📋</div>
-                <div><div class="card-title">指标数据</div><div class="card-desc">手动录入、或导入本地 CSV 文件</div></div>
-            </div>
-
-            <div class="data-toolbar">
-                <button class="btn btn-secondary btn-sm" @click="addRow()">＋ 添加指标</button>
-                <button class="btn btn-secondary btn-sm" @click="loadSample()">📦 加载示例数据</button>
-                <button class="btn btn-secondary btn-sm" @click="clearRows()">🗑 清空</button>
-                <div class="spacer"></div>
-                <button class="btn btn-secondary btn-sm" @click="downloadTemplate()">⬇ 下载 CSV 模板</button>
-            </div>
-
-            <div class="table-scroll">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>指标名称</th>
-                            <th x-show="testType === 'single'">成功数 x</th>
-                            <th x-show="testType === 'single'">样本量 n</th>
-                            <th x-show="testType === 'single'">基准 p₀(%)</th>
-                            <th x-show="testType === 'two'">A 成功数 x₁</th>
-                            <th x-show="testType === 'two'">A 样本量 n₁</th>
-                            <th x-show="testType === 'two'">B 成功数 x₂</th>
-                            <th x-show="testType === 'two'">B 样本量 n₂</th>
-                            <th style="width:48px"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="(row, idx) in rows" :key="idx">
-                            <tr>
-                                <td><input type="text" x-model="row.metric" placeholder="例如: 转化率" class="metric-input"></td>
-                                <td x-show="testType === 'single'"><input type="number" x-model="row.x" step="any" min="0" placeholder="860" :class="{ 'input-error': rowErrors[idx]?.x }" @input="delete rowErrors[idx]"></td>
-                                <td x-show="testType === 'single'"><input type="number" x-model="row.n" step="any" min="0" placeholder="2000" :class="{ 'input-error': rowErrors[idx]?.n }" @input="delete rowErrors[idx]"></td>
-                                <td x-show="testType === 'single'"><input type="number" x-model="row.p0" step="any" min="0" placeholder="默认" :class="{ 'input-error': rowErrors[idx]?.p0 }" @input="delete rowErrors[idx]"></td>
-                                <td x-show="testType === 'two'"><input type="number" x-model="row.x1" step="any" min="0" placeholder="1240" :class="{ 'input-error': rowErrors[idx]?.x1 }" @input="delete rowErrors[idx]"></td>
-                                <td x-show="testType === 'two'"><input type="number" x-model="row.n1" step="any" min="0" placeholder="8000" :class="{ 'input-error': rowErrors[idx]?.n1 }" @input="delete rowErrors[idx]"></td>
-                                <td x-show="testType === 'two'"><input type="number" x-model="row.x2" step="any" min="0" placeholder="1456" :class="{ 'input-error': rowErrors[idx]?.x2 }" @input="delete rowErrors[idx]"></td>
-                                <td x-show="testType === 'two'"><input type="number" x-model="row.n2" step="any" min="0" placeholder="8000" :class="{ 'input-error': rowErrors[idx]?.n2 }" @input="delete rowErrors[idx]"></td>
-                                <td><button class="row-del" title="删除" @click="removeRow(idx)">✕</button></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="dropzone" x-ref="dropzone"
-                 @click="$refs.csvFile.click()"
-                 @dragenter.prevent="dropzoneDrag = true"
-                 @dragover.prevent
-                 @dragleave.prevent="dropzoneDrag = false"
-                 @drop.prevent="dropzoneDrag = false; handleDrop($event)"
-                 :class="{ dragover: dropzoneDrag }">
-                点击或拖拽 <strong>.csv</strong> 文件到此处导入
-                <span class="dz-hint" x-text="dzHint"></span>
-                <input type="file" x-ref="csvFile" accept=".csv,text/csv" style="display:none" @change="handleFileSelect($event)">
-            </div>
-            <div class="csv-status" :class="csvStatus.cls" x-text="csvStatus.msg"></div>
-        </div>
-
-        <div class="action-row">
-            <button class="btn btn-secondary" @click="clearRows()">🔄 重置</button>
-            <button class="btn btn-primary" @click="runTest()">🧮 运行检验</button>
-        </div>
-
-        <!-- 验证错误 -->
-        <div class="validation-banner" role="alert" aria-live="polite" x-show="errorList.length" x-cloak>
-            <template x-for="(msg, i) in errorList" :key="i">
-                <div x-text="'⚠ ' + msg"></div>
-            </template>
-        </div>
-
-        <!-- 结果 -->
-        <div class="results-section" :class="{ visible: hasResults }" x-ref="results">
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon purple">📊</div>
-                    <div><div class="card-title">检验结果</div><div class="card-desc" x-text="resultDesc"></div></div>
+                    <div><div class="card-title">检验参数</div><div class="card-desc">设定显著性水平、检验方向与多重比较校正</div></div>
                 </div>
-
-                <div class="summary-row" x-show="hasResults">
-                    <template x-for="card in summaryCards" :key="card.label">
-                        <div class="summary-card" :class="card.cls">
-                            <div class="s-label" x-text="card.label"></div>
-                            <div class="s-value" :style="card.style || ''" x-html="card.value"></div>
-                        </div>
-                    </template>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>显著性水平 α <span class="tooltip tip-left" data-tip="假阳性率。α=0.05 表示 5% 概率误报。置信区间置信度为 1−α。">ⓘ</span></label>
+                        <input type="number" id="alpha" step="0.01" min="0.001" max="0.5" value="0.05">
+                    </div>
+                    <div class="form-group">
+                        <label>检验方向 <span class="tooltip tip-left" data-tip="双侧：检验是否存在差异（≠）。单侧：检验是否更大（>）或更小（<）。">ⓘ</span></label>
+                        <select id="tail">
+                            <option value="two">双侧检验 (≠)</option>
+                            <option value="greater">右侧检验 (&gt;)</option>
+                            <option value="less">左侧检验 (&lt;)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>多重比较校正 <span class="tooltip tip-left" data-tip="同时检验多个指标时整体误报率会膨胀。Bonferroni 最保守；Holm 检验力更高；BH 控制错误发现率（FDR）。">ⓘ</span></label>
+                        <select id="correction">
+                            <option value="none">不校正</option>
+                            <option value="bonferroni">Bonferroni</option>
+                            <option value="holm">Holm-Bonferroni</option>
+                            <option value="bh">Benjamini-Hochberg (FDR)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="default-p0-group">
+                        <label>默认基准比例 p₀ <span class="tooltip tip-left" data-tip="单样本检验中，每个指标与该基准比例比较。表格中可对每行单独覆盖（%）。">ⓘ</span></label>
+                        <input type="number" id="default-p0" step="0.1" min="0" max="100" value="50" placeholder="例如 50">
+                    </div>
                 </div>
-
-                <h4 class="section-title">森林图 · 效应量与置信区间</h4>
-                <div class="forest-wrap">
-                    <div x-ref="forest"></div>
-                </div>
-                <div class="forest-legend">
-                    <span class="lg"><span class="dot" style="background:var(--accent-green)"></span>显著（高于基准 / A&gt;B）</span>
-                    <span class="lg"><span class="dot" style="background:var(--accent-red)"></span>显著（低于基准 / A&lt;B）</span>
-                    <span class="lg"><span class="dot" style="background:var(--text-muted)"></span>不显著</span>
-                    <span class="lg"><span style="width:18px;border-top:2px dashed var(--text-muted);display:inline-block"></span>基准线（差异=0）</span>
-                </div>
-
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
-                    <h4 class="section-title" style="margin:30px 0 18px;">明细</h4>
-                    <button class="btn btn-secondary btn-sm" @click="downloadResults()">⬇ 下载结果 CSV</button>
-                </div>
-                <div class="table-container">
-                    <table class="results-table"><thead x-ref="resThead"></thead><tbody x-ref="resTbody"></tbody></table>
-                </div>
-
-                <div class="formula-display" x-ref="formula"></div>
+                <div class="info-box" id="param-info"></div>
             </div>
-        </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div><div class="card-title">指标数据</div><div class="card-desc">手动录入，或导入本地 CSV 文件</div></div>
+                </div>
+
+                <div class="data-toolbar">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addRow()">添加指标</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="loadSample()">加载示例数据</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="clearRows()">清空</button>
+                    <div class="spacer"></div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="downloadTemplate()">下载 CSV 模板</button>
+                </div>
+
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead id="data-thead"></thead>
+                        <tbody id="data-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="dropzone" id="csv-dropzone">
+                    点击或拖拽 <strong>.csv</strong> 文件到此处导入
+                    <span class="dz-hint" id="dz-hint"></span>
+                </div>
+                <input type="file" id="csv-file" accept=".csv,text/csv" hidden>
+                <div class="csv-status" id="csv-status"></div>
+            </div>
+
+            <div class="action-row">
+                <button type="button" class="btn btn-secondary" onclick="clearRows()">重置</button>
+                <button type="button" class="btn btn-primary" onclick="runTest()">运行检验</button>
+            </div>
+
+            <div class="validation-banner" id="validation-banner" role="alert" aria-live="polite" hidden></div>
+
+            <div class="results-section" id="results">
+                <div class="card">
+                    <div class="card-header">
+                        <div><div class="card-title">检验结果</div><div class="card-desc" id="result-desc"></div></div>
+                    </div>
+
+                    <div class="metric-grid" id="summary-grid"></div>
+
+                    <h4 class="section-title">森林图 · 效应量与置信区间</h4>
+                    <div class="forest-wrap">
+                        <div id="forest"></div>
+                    </div>
+                    <div class="forest-legend">
+                        <span class="lg"><span class="dot dot-up"></span>显著（高于基准 / A&gt;B）</span>
+                        <span class="lg"><span class="dot dot-down"></span>显著（低于基准 / A&lt;B）</span>
+                        <span class="lg"><span class="dot dot-neutral"></span>不显著</span>
+                        <span class="lg"><span style="width:18px;border-top:2px dashed var(--apple-secondary);display:inline-block"></span>基准线（差异=0）</span>
+                    </div>
+
+                    <div class="section-header-row">
+                        <h4 class="section-title">明细</h4>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="downloadResults()">下载结果 CSV</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="results-table">
+                            <thead id="res-thead"></thead>
+                            <tbody id="res-tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="formula-section">
+                        <div class="formula-label">公式说明</div>
+                        <div class="formula-text" id="formula"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-<script>
-// ====== 示例数据 ======
-const SAMPLE_SINGLE = [
-    { metric: '列表页点击率', x: 3120, n: 4000, p0: 75 },
-    { metric: '详情页转化率', x: 860,  n: 2000, p0: 45 },
-    { metric: '预订完成率',   x: 1505, n: 2500, p0: 60 },
-    { metric: '订单支付成功率', x: 2790, n: 3000, p0: 90 },
-    { metric: '订后短信打开率', x: 410,  n: 1000, p0: 38 },
-    { metric: '客服转人工率',   x: 180,  n: 1500, p0: 15 }
-];
-const SAMPLE_TWO = [
-    { metric: '首页Banner点击率', x1: 1240, n1: 8000, x2: 1456, n2: 8000 },
-    { metric: '搜索结果转化率',   x1: 920,  n1: 5000, x2: 965,  n2: 5000 },
-    { metric: '商品加购率',       x1: 600,  n1: 3000, x2: 660,  n2: 3000 },
-    { metric: '提交下单率',       x1: 450,  n1: 3000, x2: 420,  n2: 3000 },
-    { metric: '30日复购率',       x1: 320,  n1: 2000, x2: 260,  n2: 2000 },
-    { metric: '订单退款率',       x1: 90,   n1: 2000, x2: 140,  n2: 2000 }
-];
-const CORRECTION_NAMES = { none: '不校正', bonferroni: 'Bonferroni', holm: 'Holm-Bonferroni', bh: 'Benjamini-Hochberg (FDR)' };
-
-// ====== 统计核心 ======
-function erf(x) {
-    const t = 1 / (1 + 0.3275911 * Math.abs(x));
-    const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
-    return x >= 0 ? y : -y;
-}
-function normCDF(z) { return 0.5 * (1 + erf(z / Math.SQRT2)); }
-function normInv(p) {
-    if (p <= 0 || p >= 1) return p <= 0 ? -Infinity : Infinity;
-    const a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239];
-    const b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
-    const c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783];
-    const d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416];
-    const pLow = 0.02425;
-    let q, r;
-    if (p < pLow) {
-        q = Math.sqrt(-2 * Math.log(p));
-        return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-    } else if (p <= 1 - pLow) {
-        q = p - 0.5; r = q * q;
-        return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
-    } else {
-        q = Math.sqrt(-2 * Math.log(1 - p));
-        return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-    }
-}
-function pValue(z, tail) {
-    if (tail === 'greater') return 1 - normCDF(z);
-    if (tail === 'less') return normCDF(z);
-    return 2 * (1 - normCDF(Math.abs(z)));
-}
-function calcPower(d, seNull, seAlt, zc, tail) {
-    if (!(seAlt > 0)) seAlt = seNull;
-    if (!(seAlt > 0)) return NaN;
-    let pw;
-    if (tail === 'greater') pw = normCDF((d - zc * seNull) / seAlt);
-    else if (tail === 'less') pw = normCDF((-d - zc * seNull) / seAlt);
-    else pw = normCDF((d - zc * seNull) / seAlt) + normCDF((-d - zc * seNull) / seAlt);
-    return Math.min(1, Math.max(0, pw));
-}
-function adjustPValues(pvals, method) {
-    const m = pvals.length;
-    if (m === 0 || method === 'none') return pvals.slice();
-    if (method === 'bonferroni') return pvals.map(p => Math.min(1, p * m));
-    const idx = pvals.map((p, i) => i).sort((a, b) => pvals[a] - pvals[b]);
-    const adj = new Array(m);
-    if (method === 'holm') {
-        let prev = 0;
-        for (let k = 0; k < m; k++) { const i = idx[k]; let val = Math.min(1, (m - k) * pvals[i]); val = Math.max(val, prev); adj[i] = val; prev = val; }
-    } else if (method === 'bh') {
-        let prev = 1;
-        for (let k = m - 1; k >= 0; k--) { const i = idx[k]; let val = Math.min(1, pvals[i] * m / (k + 1)); val = Math.min(val, prev); adj[i] = val; prev = val; }
-    }
-    return adj;
-}
-function testSingle(x, n, p0, alpha, tail) {
-    const phat = x / n;
-    const se0 = Math.sqrt(p0 * (1 - p0) / n);
-    const seEst = Math.sqrt(phat * (1 - phat) / n);
-    const z = se0 > 0 ? (phat - p0) / se0 : 0;
-    const p = pValue(z, tail);
-    const zc = normInv(1 - (tail === 'two' ? alpha / 2 : alpha));
-    return { phat, p0, est: phat - p0, ciLow: (phat - p0) - zc * seEst, ciHigh: (phat - p0) + zc * seEst, z, p, se0, seEst, zc, power: calcPower(phat - p0, se0, seEst, zc, tail) };
-}
-function testTwo(x1, n1, x2, n2, alpha, tail) {
-    const p1 = x1 / n1, p2 = x2 / n2;
-    const diff = p1 - p2;
-    const pPool = (x1 + x2) / (n1 + n2);
-    const sePool = Math.sqrt(pPool * (1 - pPool) * (1 / n1 + 1 / n2));
-    const seDiff = Math.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2);
-    const z = sePool > 0 ? diff / sePool : 0;
-    const p = pValue(z, tail);
-    const zc = normInv(1 - (tail === 'two' ? alpha / 2 : alpha));
-    return { p1, p2, est: diff, ciLow: diff - zc * seDiff, ciHigh: diff + zc * seDiff, z, p, pPool, sePool, seDiff, zc, power: calcPower(diff, sePool, seDiff, zc, tail) };
-}
-
-// ====== 格式化工具 ======
-function calcOR(pN, pD) { if (pD <= 0 || pD >= 1 || pN <= 0 || pN >= 1) return null; return (pN * (1 - pD)) / (pD * (1 - pN)); }
-function fmtOR(or) { return or === null ? '—' : or.toFixed(3); }
-function orCls(or) { return or === null ? '' : (or > 1 ? 'success-cell' : (or < 1 ? 'warning-cell' : '')); }
-function clip(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
-function escapeXml(s) { return String(s).replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[c])); }
-function fmtP(p) { return p < 0.0001 ? '<0.0001' : p.toFixed(4); }
-function fmtPower(v) { return isFinite(v) ? (v * 100).toFixed(1) + '%' : '—'; }
-function powerCls(v) { return isFinite(v) && v >= 0.8 ? 'success-cell' : (isFinite(v) && v < 0.5 ? 'warning-cell' : ''); }
-function escapeHtml(s) { return String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])); }
-function colorFor(r) { if (!r.sig) return 'var(--text-muted)'; return r.est > 0 ? 'var(--accent-green)' : 'var(--accent-red)'; }
-function tagFor(r) { if (!r.sig) return '<span class="tag ns">不显著</span>'; return r.est > 0 ? '<span class="tag sig-up">显著↑</span>' : '<span class="tag sig-down">显著↓</span>'; }
-
-// ====== 渲染函数（命令式，通过 $refs 注入） ======
-function renderForest(results, testType) {
-    const rowH = 46, padTop = 44, padBottom = 52;
-    const W = 860, labelW = 196, valW = 156;
-    const plotLeft = labelW, plotRight = W - valW, plotW = plotRight - plotLeft;
-    const H = padTop + results.length * rowH + padBottom;
-    let vals = [0];
-    results.forEach(r => vals.push(r.ciLow, r.ciHigh, r.est));
-    let dmin = Math.min(...vals), dmax = Math.max(...vals);
-    if (dmin === dmax) { dmin -= 0.01; dmax += 0.01; }
-    const sp = dmax - dmin; dmin -= sp * 0.12; dmax += sp * 0.12;
-    const X = v => plotLeft + (v - dmin) / (dmax - dmin) * plotW;
-    const axisY = padTop + results.length * rowH + 8;
-    let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" font-family="JetBrains Mono, monospace">`;
-    const ticks = 5;
-    for (let i = 0; i <= ticks; i++) {
-        const v = dmin + (dmax - dmin) * i / ticks;
-        const px = X(v);
-        svg += `<line x1="${px}" y1="${padTop - 10}" x2="${px}" y2="${axisY}" stroke="#2a3441" stroke-width="1"/>`;
-        svg += `<text x="${px}" y="${axisY + 18}" fill="#6b7280" font-size="11" text-anchor="middle">${(v * 100).toFixed(1)}%</text>`;
-    }
-    svg += `<line x1="${plotLeft}" y1="${axisY}" x2="${plotRight}" y2="${axisY}" stroke="#2a3441" stroke-width="1"/>`;
-    svg += `<text x="${(plotLeft + plotRight) / 2}" y="${axisY + 40}" fill="#9ca3af" font-size="12" text-anchor="middle" font-family="Noto Sans SC, sans-serif">${testType === 'single' ? '观测比例 − 基准比例 (p̂ − p₀)' : '组间差异 (A − B)'}</text>`;
-    const zx = X(0);
-    svg += `<line x1="${zx}" y1="${padTop - 10}" x2="${zx}" y2="${axisY}" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="5,4"/>`;
-    results.forEach((r, i) => {
-        const cy = padTop + i * rowH + rowH / 2;
-        const col = colorFor(r);
-        const lo = X(r.ciLow), hi = X(r.ciHigh), pe = X(r.est);
-        svg += `<text x="${plotLeft - 14}" y="${cy + 4}" fill="#e8eaed" font-size="12.5" text-anchor="end" font-family="Noto Sans SC, sans-serif">${escapeXml(clip(r.metric, 12))}</text>`;
-        svg += `<line x1="${lo}" y1="${cy}" x2="${hi}" y2="${cy}" stroke="${col}" stroke-width="2.5" opacity="0.85"/>`;
-        svg += `<line x1="${lo}" y1="${cy - 6}" x2="${lo}" y2="${cy + 6}" stroke="${col}" stroke-width="2"/>`;
-        svg += `<line x1="${hi}" y1="${cy - 6}" x2="${hi}" y2="${cy + 6}" stroke="${col}" stroke-width="2"/>`;
-        svg += `<circle cx="${pe}" cy="${cy}" r="6" fill="${col}" stroke="#0a0e14" stroke-width="1.5"><title>${escapeXml(r.metric)}: ${(r.est*100).toFixed(2)}% [${(r.ciLow*100).toFixed(2)}%, ${(r.ciHigh*100).toFixed(2)}%], p=${fmtP(r.p)}${r.corrected ? ', 校正后 p=' + fmtP(r.pAdj) : ''}, 功效=${fmtPower(r.power)}</title></circle>`;
-        const pShown = r.corrected ? r.pAdj : r.p;
-        const txt = `${r.est >= 0 ? '+' : ''}${(r.est * 100).toFixed(2)}%  ${r.corrected ? 'p*' : 'p'}=${fmtP(pShown)}`;
-        svg += `<text x="${plotRight + 12}" y="${cy + 4}" fill="${r.sig ? col : '#9ca3af'}" font-size="11.5" text-anchor="start">${txt}</text>`;
-    });
-    svg += `</svg>`;
-    return svg;
-}
-
-function renderTableHTML(results, alpha, tail, testType) {
-    const ciLabel = `${((1 - alpha) * 100).toFixed(0)}% CI`;
-    const corrected = results.length && results[0].corrected;
-    const adjHead = corrected ? '<th>校正后 p</th>' : '';
-    const adjCell = r => corrected ? `<td>${fmtP(r.pAdj)}</td>` : '';
-    const pwHead = '<th>事后功效 <sl-tooltip content="observed power：以观测效应为真实效应，在当前样本量与 α 下检测到该效应的概率。⚠️ 注意：事后功效由 p 值唯一确定，不提供额外信息——p 值显著时功效必然高，反之必然低（Hoenig &amp; Heisey, 2001）。" style="--max-width: 260px;"><span class="tip-icon">ⓘ</span></sl-tooltip></th>';
-    const pwCell = r => `<td class="${powerCls(r.power)}">${fmtPower(r.power)}</td>`;
-    const orHead = '<th>OR <sl-tooltip content="比值比（Odds Ratio）：衡量两组事件发生的优势之比。单样本：OR = (p̂÷(1−p̂)) ÷ (p₀÷(1−p₀))；双样本：OR = (p₂÷(1−p₂)) ÷ (p₁÷(1−p₁))。OR=1 无差异，OR&gt;1 绿色（正向），OR&lt;1 橙色（负向）。p 较小时 OR≈RR；p 较大时 OR 会高估相对差异。" style="--max-width: 260px;"><span class="tip-icon">ⓘ</span></sl-tooltip></th>';
-    const orCellSingle = r => { const or = calcOR(r.phat, r.p0); return `<td class="${orCls(or)}">${fmtOR(or)}</td>`; };
-    const orCellTwo = r => { const or = calcOR(r.p2, r.p1); return `<td class="${orCls(or)}">${fmtOR(or)}</td>`; };
-    let thead, tbody;
-    if (testType === 'single') {
-        thead = `<tr><th>指标</th><th>观测 p̂</th><th>基准 p₀</th><th>差异</th><th>${ciLabel}</th>${orHead}<th>z 值</th><th>p 值</th>${adjHead}${pwHead}<th>结论</th></tr>`;
-        tbody = results.map(r => `<tr><td class="metric-cell">${escapeHtml(r.metric)}</td><td>${(r.phat * 100).toFixed(2)}%</td><td>${(r.p0 * 100).toFixed(2)}%</td><td>${r.est >= 0 ? '+' : ''}${(r.est * 100).toFixed(2)}%</td><td>[${(r.ciLow * 100).toFixed(2)}%, ${(r.ciHigh * 100).toFixed(2)}%]</td>${orCellSingle(r)}<td>${r.z.toFixed(3)}</td><td>${fmtP(r.p)}</td>${adjCell(r)}${pwCell(r)}<td>${tagFor(r)}</td></tr>`).join('');
-    } else {
-        thead = `<tr><th>指标</th><th>A 比例</th><th>B 比例</th><th>差异(A−B)</th><th>${ciLabel}</th>${orHead}<th>z 值</th><th>p 值</th>${adjHead}${pwHead}<th>结论</th></tr>`;
-        tbody = results.map(r => `<tr><td class="metric-cell">${escapeHtml(r.metric)}</td><td>${(r.p1 * 100).toFixed(2)}%</td><td>${(r.p2 * 100).toFixed(2)}%</td><td>${r.est >= 0 ? '+' : ''}${(r.est * 100).toFixed(2)}%</td><td>[${(r.ciLow * 100).toFixed(2)}%, ${(r.ciHigh * 100).toFixed(2)}%]</td>${orCellTwo(r)}<td>${r.z.toFixed(3)}</td><td>${fmtP(r.p)}</td>${adjCell(r)}${pwCell(r)}<td>${tagFor(r)}</td></tr>`).join('');
-    }
-    return { thead, tbody };
-}
-
-function renderFormulaHTML(alpha, tail, testType, correction) {
-    const tailTxt = { two: '双侧', greater: '右侧', less: '左侧' }[tail];
-    const pTxt = tail === 'two' ? '2 × [1 − Φ(|z|)]' : (tail === 'greater' ? '1 − Φ(z)' : 'Φ(z)');
-    const sigTxt = correction === 'none' ? '当 p &lt; α 时认为显著' : '当<strong>校正后 p</strong> &lt; α 时认为显著';
-    let html;
-    if (testType === 'single') {
-        html = `<strong>单样本 z 比例检验</strong>（${tailTxt}，α=${alpha}）<br>检验统计量：z = (p̂ − p₀) / √(p₀(1−p₀)/n)<br>置信区间（Wald）：(p̂ − p₀) ± Z<sub>${tail === 'two' ? 'α/2' : 'α'}</sub> × √(p̂(1−p̂)/n)<br>p 值：${pTxt}；${sigTxt}`;
-    } else {
-        html = `<strong>双样本 z 比例检验</strong>（${tailTxt}，α=${alpha}）<br>合并比例：p̄ = (x₁ + x₂) / (n₁ + n₂)<br>检验统计量：z = (p̂₁ − p̂₂) / √(p̄(1−p̄)(1/n₁ + 1/n₂))<br>置信区间：(p̂₁ − p̂₂) ± Z<sub>${tail === 'two' ? 'α/2' : 'α'}</sub> × √(p̂₁(1−p̂₁)/n₁ + p̂₂(1−p̂₂)/n₂)<br>p 值：${pTxt}；${sigTxt}`;
-    }
-    html += `<br><strong>事后功效 (observed power, 1−β)</strong><br>以观测效应为真实效应，在当前样本量与 α 下检测到该效应的概率。功效偏低时，不显著的结果更可能源于样本量不足而非确无效应。<br><span style="color:var(--accent-orange);font-size:0.88em;">⚠️ 注意：事后功效由 p 值唯一确定，不提供超出 p 值的额外信息（Hoenig &amp; Heisey, 2001）——p 值显著时事后功效必然高，反之亦然。建议将此列视为参考，而非独立解读。</span>`;
-    if (correction !== 'none') {
-        const desc = { bonferroni: 'Bonferroni：p<sub>校正</sub> = min(1, m × p)，m 为指标数。最保守，控制整体误报率 FWER ≤ α。', holm: 'Holm-Bonferroni：将 p 值升序排列，第 k 小者乘以 (m − k + 1) 并保持单调。控制 FWER，且检验力高于 Bonferroni。', bh: 'Benjamini-Hochberg：将 p 值升序排列，第 k 小者乘以 m/k 并保持单调。控制错误发现率 FDR ≤ α，适合多指标探索。' }[correction];
-        html += `<br><strong>多重比较校正 · ${CORRECTION_NAMES[correction]}</strong><br>${desc}`;
-    }
-    return html;
-}
-
-// ====== CSV 解析 ======
-function parseCSV(text, testType) {
-    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim() !== '');
-    if (!lines.length) return [];
-    const splitLine = l => l.split(',').map(s => s.trim().replace(/^"(.*)"$/, '$1'));
-    const rawHeader = splitLine(lines[0]);
-    const header = rawHeader.map(h => h.toLowerCase());
-    const alias = { metric: ['metric', 'name', '指标', '指标名称', '名称'], x: ['x', 'success', 'successes', '成功数', '成功'], n: ['n', 'total', '样本量', '总数'], p0: ['p0', 'baseline', 'base', '基准', '基准比例'], x1: ['x1', 'xa', 'a_x', '成功数a', 'a成功数', '成功数1'], n1: ['n1', 'na', 'a_n', '样本量a', 'a样本量', '样本量1'], x2: ['x2', 'xb', 'b_x', '成功数b', 'b成功数', '成功数2'], n2: ['n2', 'nb', 'b_n', '样本量b', 'b样本量', '样本量2'] };
-    const findIdx = keys => { for (const k of keys) { const i = header.indexOf(k); if (i !== -1) return i; } return -1; };
-    const needed = testType === 'single' ? ['metric', 'x', 'n', 'p0'] : ['metric', 'x1', 'n1', 'x2', 'n2'];
-    const idx = {};
-    let headerMatched = false;
-    needed.forEach(k => { idx[k] = findIdx(alias[k]); if (idx[k] !== -1 && k !== 'metric') headerMatched = true; });
-    let dataLines = lines;
-    if (headerMatched) {
-        dataLines = lines.slice(1);
-    } else {
-        const order = testType === 'single' ? ['metric', 'x', 'n', 'p0'] : ['metric', 'x1', 'n1', 'x2', 'n2'];
-        order.forEach((k, i) => idx[k] = i);
-        const firstCells = splitLine(lines[0]);
-        const numKey = testType === 'single' ? idx.x : idx.x1;
-        if (firstCells[numKey] !== undefined && isNaN(parseFloat(firstCells[numKey]))) dataLines = lines.slice(1);
-    }
-    const out = [];
-    dataLines.forEach(line => {
-        const cells = splitLine(line);
-        const obj = {};
-        for (const k of needed) { const i = idx[k]; obj[k] = (i !== -1 && cells[i] !== undefined) ? cells[i] : ''; }
-        out.push(obj);
-    });
-    return out;
-}
-
-// ====== GA ======
-function trackEvent(action) {
-    if (typeof gtag !== 'undefined') gtag('event', action, { 'event_category': 'significance_test' });
-}
-
-// ====== CSV 导出 ======
-function csvCell(v) { const s = String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
-function saveCsv(rows, fname) {
-    const csv = rows.map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = fname; a.click();
-    URL.revokeObjectURL(url);
-}
-
-// ====== Alpine 工厂函数 ======
-function significanceTest() {
-    return {
-        testType: 'single',
-        alpha: '0.05',
-        tail: 'two',
-        correction: 'none',
-        defaultP0: '50',
-        rows: [{ metric: '', x: '', n: '', p0: '', x1: '', n1: '', x2: '', n2: '' }],
-        errors: {},
-        errorList: [],
-        rowErrors: {},
-        hasResults: false,
-        csvStatus: { msg: '', cls: '' },
-        lastRun: null,
-        dropzoneDrag: false,
-
-        get paramInfo() {
-            let base;
-            if (this.testType === 'single') {
-                base = '<strong>💡 单样本检验：</strong>将每个指标的观测比例 p̂ = x/n 与基准比例 p₀ 比较，判断差异是否显著。CSV 列：<code>metric, x, n, p0</code>（p₀ 为百分数，可留空使用默认值）。';
-            } else {
-                base = '<strong>💡 双样本检验：</strong>比较两组（A/B）独立比例 p̂₁、p̂₂ 是否存在显著差异。CSV 列：<code>metric, x1, n1, x2, n2</code>。';
-            }
-            if (this.correction !== 'none') {
-                base += `<br><strong>🔬 已启用 ${CORRECTION_NAMES[this.correction]} 校正：</strong>多指标同时检验时整体误报率会膨胀，将基于<strong>校正后 p 值</strong>判定显著性。`;
-            }
-            return base;
-        },
-
-        get dzHint() {
-            return this.testType === 'single' ? '列格式：metric, x, n, p0' : '列格式：metric, x1, n1, x2, n2';
-        },
-
-        get resultDesc() {
-            if (!this.lastRun) return '显著性判定与置信区间';
-            const { results, alpha, correction, testType: tt } = this.lastRun;
-            return (tt === 'single' ? '单样本' : '双样本') + ` z 比例检验 · ${results.length} 个指标 · 置信度 ${((1 - alpha) * 100).toFixed(0)}%` + (correction !== 'none' ? ` · ${CORRECTION_NAMES[correction]} 校正` : '');
-        },
-
-        get summaryCards() {
-            if (!this.lastRun) return [];
-            const results = this.lastRun.results;
-            const total = results.length;
-            const sig = results.filter(r => r.sig).length;
-            const up = results.filter(r => r.sig && r.est > 0).length;
-            const down = results.filter(r => r.sig && r.est < 0).length;
-            return [
-                { label: '指标总数', value: String(total), cls: '' },
-                { label: '显著', value: String(sig), cls: 'sig' },
-                { label: '不显著', value: String(total - sig), cls: 'nsig' },
-                { label: '↑ 升 / ↓ 降', value: `<span style="color:var(--accent-green)">${up}</span> / <span style="color:var(--accent-red)">${down}</span>`, cls: '', style: 'font-size:1.4rem' },
-            ];
-        },
-
-        init() {
-            this.$nextTick(() => {
-                this.$refs.results.classList.remove('visible');
-            });
-        },
-
-        switchTest(t) {
-            this.testType = t;
-            this.clearRows();
-        },
-
-        addRow(data = {}) {
-            this.rows.push({
-                metric: data.metric || '',
-                x: data.x != null ? String(data.x) : '',
-                n: data.n != null ? String(data.n) : '',
-                p0: data.p0 != null ? String(data.p0) : '',
-                x1: data.x1 != null ? String(data.x1) : '',
-                n1: data.n1 != null ? String(data.n1) : '',
-                x2: data.x2 != null ? String(data.x2) : '',
-                n2: data.n2 != null ? String(data.n2) : '',
-            });
-        },
-
-        removeRow(idx) {
-            if (this.rows.length > 1) this.rows.splice(idx, 1);
-        },
-
-        clearRows() {
-            this.rows = [{ metric: '', x: '', n: '', p0: '', x1: '', n1: '', x2: '', n2: '' }];
-            this.hasResults = false;
-            this.csvStatus = { msg: '', cls: '' };
-            this.lastRun = null;
-            this.errors = {};
-            this.errorList = [];
-            this.rowErrors = {};
-        },
-
-        loadSample() {
-            const data = this.testType === 'single' ? SAMPLE_SINGLE : SAMPLE_TWO;
-            this.rows = data.map(d => ({
-                metric: d.metric,
-                x: d.x != null ? String(d.x) : '',
-                n: d.n != null ? String(d.n) : '',
-                p0: d.p0 != null ? String(d.p0) : '',
-                x1: d.x1 != null ? String(d.x1) : '',
-                n1: d.n1 != null ? String(d.n1) : '',
-                x2: d.x2 != null ? String(d.x2) : '',
-                n2: d.n2 != null ? String(d.n2) : '',
-            }));
-            this.csvStatus = { msg: `已加载 ${data.length} 行示例数据`, cls: 'ok' };
-            this.$nextTick(() => this.runTest());
-        },
-
-        runTest() {
-            this.errors = {};
-            this.errorList = [];
-            this.rowErrors = {};
-            const alpha = parseFloat(this.alpha) || 0.05;
-            const tail = this.tail;
-            const defP0 = (parseFloat(this.defaultP0) || 0) / 100;
-
-            const dataRows = this.rows.filter(row => {
-                if (this.testType === 'single') return row.x !== '' || row.n !== '';
-                return row.x1 !== '' || row.n1 !== '' || row.x2 !== '' || row.n2 !== '';
-            });
-
-            if (!dataRows.length) { this.errorList = ['请先录入或导入至少一行有效数据']; return; }
-
-            const results = [];
-            const list = [];
-            let firstErrIdx = -1;
-
-            for (let i = 0; i < dataRows.length; i++) {
-                const r = dataRows[i];
-                const metric = (r.metric && r.metric.trim()) || `指标 ${i + 1}`;
-                if (this.testType === 'single') {
-                    const x = parseFloat(r.x), n = parseFloat(r.n);
-                    let p0 = r.p0 !== '' && !isNaN(parseFloat(r.p0)) ? parseFloat(r.p0) / 100 : defP0;
-                    if (!(n > 0) || !(x >= 0) || x > n) {
-                        list.push(`第 ${i + 1} 行（${metric}）的 x/n 无效：需满足 0 ≤ x ≤ n 且 n>0`);
-                        if (firstErrIdx === -1) firstErrIdx = i;
-                        this.rowErrors[i] = { x: true, n: true };
-                        continue;
-                    }
-                    if (!(p0 > 0 && p0 < 1)) {
-                        list.push(`第 ${i + 1} 行（${metric}）的基准比例 p₀ 无效（需在 0-100% 之间）`);
-                        if (firstErrIdx === -1) firstErrIdx = i;
-                        this.rowErrors[i] = { p0: true };
-                        continue;
-                    }
-                    results.push({ metric, raw: { x, n }, ...testSingle(x, n, p0, alpha, tail) });
-                } else {
-                    const x1 = parseFloat(r.x1), n1 = parseFloat(r.n1), x2 = parseFloat(r.x2), n2 = parseFloat(r.n2);
-                    if (!(n1 > 0 && n2 > 0) || !(x1 >= 0 && x2 >= 0) || x1 > n1 || x2 > n2) {
-                        list.push(`第 ${i + 1} 行（${metric}）的样本数据无效：需满足 0 ≤ x ≤ n 且 n>0`);
-                        if (firstErrIdx === -1) firstErrIdx = i;
-                        this.rowErrors[i] = { x1: true, n1: true, x2: true, n2: true };
-                        continue;
-                    }
-                    results.push({ metric, raw: { x1, n1, x2, n2 }, ...testTwo(x1, n1, x2, n2, alpha, tail) });
-                }
-            }
-
-            if (list.length) {
-                this.errorList = list;
-                this.$nextTick(() => {
-                    const banner = this.$el.querySelector('.validation-banner');
-                    const scrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
-                    const target = banner || this.$el;
-                    target?.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
-                });
-                return;
-            }
-
-            const pAdj = adjustPValues(results.map(r => r.p), this.correction);
-            const corrected = this.correction !== 'none';
-            results.forEach((r, i) => { r.pAdj = pAdj[i]; r.corrected = corrected; r.sig = pAdj[i] < alpha; });
-
-            this.lastRun = { results, alpha, tail, correction: this.correction, testType: this.testType };
-            this.hasResults = true;
-
-            this.$nextTick(() => {
-                this.$refs.forest.innerHTML = renderForest(results, this.testType);
-                const tbl = renderTableHTML(results, alpha, tail, this.testType);
-                this.$refs.resThead.innerHTML = tbl.thead;
-                this.$refs.resTbody.innerHTML = tbl.tbody;
-                this.$refs.formula.innerHTML = renderFormulaHTML(alpha, tail, this.testType, this.correction);
-                this.$refs.results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-
-            trackEvent('run_test');
-        },
-
-        downloadTemplate() {
-            let csv, fname;
-            if (this.testType === 'single') {
-                csv = 'metric,x,n,p0\n' + SAMPLE_SINGLE.map(d => `${d.metric},${d.x},${d.n},${d.p0}`).join('\n') + '\n';
-                fname = 'significance-single-sample-template.csv';
-            } else {
-                csv = 'metric,x1,n1,x2,n2\n' + SAMPLE_TWO.map(d => `${d.metric},${d.x1},${d.n1},${d.x2},${d.n2}`).join('\n') + '\n';
-                fname = 'significance-two-sample-template.csv';
-            }
-            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = fname; a.click();
-            URL.revokeObjectURL(url);
-        },
-
-        downloadResults() {
-            if (!this.lastRun || !this.lastRun.results.length) { this.errorList = ['请先运行检验后再下载结果']; return; }
-            const { results, alpha, tail, correction, testType: tt } = this.lastRun;
-            const tailTxt = { two: '双侧', greater: '右侧', less: '左侧' }[tail];
-            const ciPct = ((1 - alpha) * 100).toFixed(0);
-            const corrected = correction !== 'none';
-            const pct = v => (v * 100).toFixed(2) + '%';
-            const sigTxt = r => r.sig ? (r.est > 0 ? '显著↑' : '显著↓') : '不显著';
-            const rows = [];
-            if (tt === 'single') {
-                const head = ['指标', '成功数x', '样本量n', '观测比例p_hat', '基准p0', '差异', `CI下限(${ciPct}%)`, `CI上限(${ciPct}%)`, 'OR', 'z值', 'p值'];
-                if (corrected) head.push('校正后p');
-                head.push('事后功效', '结论');
-                rows.push(head);
-                results.forEach(r => {
-                    const or = calcOR(r.phat, r.p0);
-                    const row = [r.metric, r.raw.x, r.raw.n, pct(r.phat), pct(r.p0), pct(r.est), pct(r.ciLow), pct(r.ciHigh), fmtOR(or), r.z.toFixed(4), r.p.toExponential(4)];
-                    if (corrected) row.push(r.pAdj.toExponential(4));
-                    row.push(fmtPower(r.power), sigTxt(r));
-                    rows.push(row);
-                });
-            } else {
-                const head = ['指标', 'A成功数x1', 'A样本量n1', 'B成功数x2', 'B样本量n2', 'A比例', 'B比例', '差异(A-B)', `CI下限(${ciPct}%)`, `CI上限(${ciPct}%)`, 'OR(B/A)', 'z值', 'p值'];
-                if (corrected) head.push('校正后p');
-                head.push('事后功效', '结论');
-                rows.push(head);
-                results.forEach(r => {
-                    const or = calcOR(r.p2, r.p1);
-                    const row = [r.metric, r.raw.x1, r.raw.n1, r.raw.x2, r.raw.n2, pct(r.p1), pct(r.p2), pct(r.est), pct(r.ciLow), pct(r.ciHigh), fmtOR(or), r.z.toFixed(4), r.p.toExponential(4)];
-                    if (corrected) row.push(r.pAdj.toExponential(4));
-                    row.push(fmtPower(r.power), sigTxt(r));
-                    rows.push(row);
-                });
-            }
-            rows.push([]);
-            rows.push(['# 检验类型', tt === 'single' ? '单样本z比例检验' : '双样本z比例检验']);
-            rows.push(['# 显著性水平α', alpha]);
-            rows.push(['# 检验方向', tailTxt]);
-            rows.push(['# 置信度', ciPct + '%']);
-            rows.push(['# 多重比较校正', CORRECTION_NAMES[correction]]);
-            rows.push(['# 导出时间', new Date().toLocaleString('zh-CN')]);
-            const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '').replace(/-/g, '');
-            saveCsv(rows, `significance-result-${tt}-${stamp}.csv`);
-            trackEvent('download_result');
-        },
-
-        handleDrop(e) {
-            const f = e.dataTransfer.files[0];
-            if (f) this.readFile(f);
-        },
-
-        handleFileSelect(e) {
-            if (e.target.files[0]) this.readFile(e.target.files[0]);
-            e.target.value = '';
-        },
-
-        readFile(file) {
-            if (!/\.csv$/i.test(file.name)) { this.csvStatus = { msg: '请选择 .csv 文件', cls: 'err' }; return; }
-            const reader = new FileReader();
-            reader.onload = e => this.handleCSVImport(e.target.result, file.name);
-            reader.onerror = () => { this.csvStatus = { msg: '文件读取失败', cls: 'err' }; };
-            reader.readAsText(file, 'UTF-8');
-        },
-
-        handleCSVImport(text, fname) {
-            let parsed;
-            try { parsed = parseCSV(text, this.testType); } catch (e) { this.csvStatus = { msg: 'CSV 解析失败：' + e.message, cls: 'err' }; return; }
-            if (!parsed.length) { this.csvStatus = { msg: '未在文件中找到有效数据行', cls: 'err' }; return; }
-            this.rows = parsed.map(d => ({
-                metric: d.metric || '',
-                x: d.x != null ? String(d.x) : '',
-                n: d.n != null ? String(d.n) : '',
-                p0: d.p0 != null ? String(d.p0) : '',
-                x1: d.x1 != null ? String(d.x1) : '',
-                n1: d.n1 != null ? String(d.n1) : '',
-                x2: d.x2 != null ? String(d.x2) : '',
-                n2: d.n2 != null ? String(d.n2) : '',
-            }));
-            this.csvStatus = { msg: `已从 ${fname || 'CSV'} 导入 ${parsed.length} 行数据`, cls: 'ok' };
-            this.$nextTick(() => this.runTest());
-        },
-    };
-}
-</script>
+<script src="../../assets/theme.js"></script>
+<script type="module" src="js/ui.js"></script>
 <script src="../../assets/changelog.js" data-page="significance-test" data-base="../../"></script>
 </body>
 </html>

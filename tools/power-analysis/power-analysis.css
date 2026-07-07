@@ -1,0 +1,39 @@
+.traffic-mode-row {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.traffic-mode-label {
+    font-size: 0.8125rem;
+    color: var(--apple-secondary);
+}
+.seg-control .traffic-mode-btn,
+.seg-control .scenario-btn {
+    border: none;
+    background: transparent;
+    color: var(--apple-seg-inactive);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+.seg-control .traffic-mode-btn.active,
+.seg-control .scenario-btn.active {
+    background: var(--apple-seg-active);
+    color: var(--apple-label);
+    font-weight: 600;
+    box-shadow: var(--apple-seg-active-shadow);
+}
+.power-analysis .metric-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 900px) {
+    .power-analysis .metric-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .power-analysis .metric-grid { grid-template-columns: 1fr; }
+}

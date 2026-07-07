@@ -1,0 +1,31 @@
+/* Sequential test — page-specific */
+
+.seg-control .switch-btn { padding: 8px 16px; font-size: 0.875rem; }
+.section-divider {
+    border: none;
+    border-top: 0.5px solid var(--apple-separator);
+    margin: 20px 0;
+}
+.subsection-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--apple-secondary);
+    margin-bottom: 14px;
+}
+.urs-app .table-wrap { overflow-x: auto; margin-bottom: 16px; }
+.urs-app .table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.urs-app .table-wrap th {
+    background: transparent;
+    color: var(--apple-secondary);
+    padding: 9px 12px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.75rem;
+    border-bottom: 0.5px solid var(--apple-separator);
+}
+.urs-app .table-wrap td {
+    padding: 9px 12px;
+    border-bottom: 0.5px solid var(--apple-separator);
+    font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+}
