@@ -1,5 +1,5 @@
 {
-  "version": "v1.2.3",
+  "version": "v1.3.0",
   "scopes": {
     "site": "全站",
     "sample-size": "样本量计算器",
@@ -8,6 +8,27 @@
     "significance-test": "显著性检验"
   },
   "releases": [
+    {
+      "version": "v1.3.0",
+      "date": "2026-07-07",
+      "changes": {
+        "site": [
+          { "group": "改进", "items": ["全站视觉重构：统一 Apple 风格主题，支持浅色/深色模式切换", "首页重新设计，工具列表采用卡片式布局", "新增 favicon 与共享主题资源（apple-theme.css、theme.js）"] }
+        ],
+        "sample-size": [
+          { "group": "改进", "items": ["页面样式统一至新主题体系", "MDE 业务指南页面同步更新视觉风格"] }
+        ],
+        "power-analysis": [
+          { "group": "改进", "items": ["逻辑拆分为 stats / charts / ui 独立模块，补充单元测试", "页面样式统一至新主题体系"] }
+        ],
+        "sequential-test": [
+          { "group": "改进", "items": ["逻辑拆分为 stats / charts / ui 独立模块，补充单元测试", "页面样式统一至新主题体系"] }
+        ],
+        "significance-test": [
+          { "group": "改进", "items": ["逻辑拆分为 stats / charts / csv / ui 独立模块，补充单元测试", "页面样式统一至新主题体系"] }
+        ]
+      }
+    },
     {
       "version": "v1.2.3",
       "date": "2026-06-30",
