@@ -291,7 +291,7 @@ function updateInfoBoxes() {
 
 function initPageConfigs() {
     for (let mode = 1; mode <= 2; mode++) {
-        const gridHtml = PAGES.map(p => `<div><input type="checkbox" id="m${mode}-pg-${p}" class="page-checkbox" onchange="togglePage(${mode},'${p}')"><label for="m${mode}-pg-${p}" class="page-label">${p}<span class="page-full-name">${PAGE_NAMES[p]}</span></label></div>`).join('');
+        const gridHtml = PAGES.map(p => `<div><input type="checkbox" id="m${mode}-pg-${p}" class="page-checkbox" onchange="togglePage(${mode},'${p}')"><label for="m${mode}-pg-${p}" class="page-label page-${p}">${p}<span class="page-full-name">${PAGE_NAMES[p]}</span></label></div>`).join('');
         document.getElementById(`m${mode}-page-grid`).innerHTML = gridHtml;
         
         let configHtml = '';
